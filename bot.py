@@ -1,5 +1,6 @@
 import os
 import discord
+from discord.ext import commands
 import settings
 
 from commands import General
@@ -23,7 +24,6 @@ class BrandoBot(commands.Bot):
         print(f'Guild Members:\n - {members}')  
 
     async def on_member_join(self, member):
-        guild = member.guild
         if guild.system_channel is not None:
             msg = '{member.mention} - you thought this was a welcome message, but it was I! Dio!'.format(member=member)
         await guild.system_channel.send(msg)

@@ -9,3 +9,7 @@ class General(commands.Cog):
     @commands.command()
     async def test(self, ctx):
         await ctx.send('test successful')
+
+    @commands.command()
+    async def add_role(self, ctx, name: str, hoist=True):
+        await ctx.guild.create_role(name=name, hoist=hoist)
