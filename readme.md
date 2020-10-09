@@ -1,5 +1,5 @@
 # Brando Bot
-[Dio asset image]('../assets/img/dio-asset.jpeg')
+![Dio asset image]('../assets/img/dio-asset.jpeg')
 
 ## Features
 - `command_prefix` is `!`
