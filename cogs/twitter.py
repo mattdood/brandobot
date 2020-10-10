@@ -28,8 +28,8 @@ class TwitterCog(commands.Cog):
         cutoff_date = datetime.utcnow() - timedelta(days=days)
         
         try:
-            timeline = tweepy.Cursor(api.user_timeline).items()
-            
+            timeline = tweepy.Cursor(self.api.user_timeline).items()
+            await ctx.send('Total tweets: {timeline}'.format(range(timeline)))
             for tweet in timeline:
                 if tweet.created_at < cutoff_date:
                     if not test:
@@ -39,8 +39,13 @@ class TwitterCog(commands.Cog):
                     deletion_count += 1
                 else:
                     ignored_count += 1
-            await ctx.send(f'Deleted {deletion_count} tweet(s), ignored {ignored_count} tweet(s)')
+            await ctx.send(
+                f'Total tweets remaining: {timeline}'.format(range(timeline)-deletion_count)
+                f'Deleted {deletion_count} tweet(s), ignored {ignored_count} tweet(s)'
+            )
         except Exception as e:
             await ctx.send(f'Expire tweets failed, exception: {e}')
 
-
+    @commands.command()
+    async def pm_tweets(self, ctx, *usernames):
+        pass
