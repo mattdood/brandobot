@@ -3,7 +3,8 @@ import discord
 from discord.ext import commands
 import settings
 
-from commands import General
+from cogs.general import General
+from cogs.twitter import TwitterCog
 
 intents = discord.Intents.default()
 intents.members = True
@@ -32,5 +33,6 @@ class BrandoBot(commands.Bot):
 bot = BrandoBot(command_prefix='!', intents=intents)
 
 bot.add_cog(General(bot))
+bot.add_cog(TwitterCog(bot))
 
 bot.run(settings.DISCORD_TOKEN)
