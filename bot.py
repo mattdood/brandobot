@@ -1,4 +1,3 @@
-import os
 import discord
 from discord.ext import commands
 import settings
@@ -6,6 +5,7 @@ import settings
 from cogs.general import General
 from cogs.twitter import TwitterCog
 
+# register intents
 intents = discord.Intents.default()
 intents.members = True
 
@@ -29,9 +29,10 @@ class BrandoBot(commands.Bot):
             msg = '{member.mention} - you thought this was a welcome message, but it was I! Dio!'.format(member=member)
         await guild.system_channel.send(msg)
 
-
+# create bot instance
 bot = BrandoBot(command_prefix='!', intents=intents)
 
+# add cogs
 bot.add_cog(General(bot))
 bot.add_cog(TwitterCog(bot))
 
