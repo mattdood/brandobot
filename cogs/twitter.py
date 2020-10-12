@@ -31,7 +31,11 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def expire_tweets(self, ctx, days: int, test: bool):
-        """Delete tweets that are older than X days"""
+        """
+        Delete tweets that are older than X days
+        
+        Passing 'True' denotes a test delete.
+        """
         deletion_count = 0
         ignored_count = 0
 
@@ -49,8 +53,7 @@ class TwitterCog(commands.Cog):
             else:
                 ignored_count += 1
         await ctx.send(
-            f'Total tweets remaining: {timeline}\n'.format(range(timeline)-deletion_count)
-            f'Deleted {deletion_count} tweet(s), ignored {ignored_count} tweet(s)'
+            'Total tweets remaining: {timeline}\n Deleted {deletion_count} tweet(s), ignored {ignored_count} tweet(s)'.format(range(timeline))
         )
 
     @commands.command()
@@ -78,10 +81,10 @@ class TwitterCog(commands.Cog):
     async def list_lists(self, ctx):
         """Lists available Twitter list objects"""
         lists = self.api.lists_all(screen_name=self.screen_name)
-        formatted_lists = [x+'\n' for x.name in lists]
+        formatted_lists = [x.name + '\n' for x.name in lists]
         await ctx.send(
             f'Available lists: \n'
-            formatted_lists
+            f'{formatted_lists}'
         )
 
     @commands.command()
@@ -127,7 +130,7 @@ class TwitterCog(commands.Cog):
         timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name)
         await ctx.send(
             f'List of tweets from {list_name}\n'
-            timeline
+            f'{timeline}'
         )
 
     @commands.command()
