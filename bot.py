@@ -12,9 +12,7 @@ intents.members = True
 class BrandoBot(commands.Bot):
     
     async def on_ready(self):
-        """
-        Logging information to server on startup
-        """
+        """Logging information to server on startup"""
         guild = discord.utils.get(bot.guilds, name=settings.DISCORD_GUILD)
         print(f'{bot.user} has connected to Discord')    
         print(
@@ -25,6 +23,8 @@ class BrandoBot(commands.Bot):
         print(f'Guild Members:\n - {members}')  
 
     async def on_member_join(self, member):
+        """Welcome message on member joining"""
+        guild = discord.utils.get(bot.guilds, name=settings.DISCORD_GUILD)
         if guild.system_channel is not None:
             msg = '{member.mention} - you thought this was a welcome message, but it was I! Dio!'.format(member=member)
         await guild.system_channel.send(msg)
