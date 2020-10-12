@@ -13,7 +13,7 @@ class TwitterCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.api = tweepy.API(TwitterCog.auth)
-        self.screen_name = self.api.me.screen_name
+        self.screen_name = self.api.me().screen_name
 
     # @commands.command()
     # async def test(self, ctx):
@@ -23,14 +23,11 @@ class TwitterCog(commands.Cog):
     @commands.command()
     async def rate_limit_tweets(self, ctx):
         """Return status of the Twitter API rate limit"""
-        try:
-            status = self.api.rate_limit_status()
-            await ctx.send(
-                f'Current rate limit status: '
-                f'{status}'
-            )
-        except Exception as e:
-            await ctx.send(f'Rate limit failed, exception: {e}')
+        status = self.api.rate_limit_status()
+        await ctx.send(
+            f'Current rate limit status: \n'
+            f'{status}'
+        )
 
     @commands.command()
     async def expire_tweets(self, ctx, days: int, test: bool):
@@ -40,51 +37,74 @@ class TwitterCog(commands.Cog):
 
         cutoff_date = datetime.utcnow() - timedelta(days=days)
         
-        try:
-            timeline = tweepy.Cursor(self.api.user_timeline).items()
-            await ctx.send('Total tweets: {timeline}'.format(range(timeline)))
-            for tweet in timeline:
-                if tweet.created_at < cutoff_date:
-                    if not test:
-                        self.api.destroy_status(tweet.id)
-                    else:
-                        ignored_count += 1
-                    deletion_count += 1
+        timeline = tweepy.Cursor(self.api.user_timeline).items()
+        await ctx.send('Total tweets: {timeline}'.format(range(timeline)))
+        for tweet in timeline:
+            if tweet.created_at < cutoff_date:
+                if not test:
+                    self.api.destroy_status(tweet.id)
                 else:
                     ignored_count += 1
-            await ctx.send(
-                f'Total tweets remaining: {timeline}'.format(range(timeline)-deletion_count)
-                f'Deleted {deletion_count} tweet(s), ignored {ignored_count} tweet(s)'
-            )
-        except Exception as e:
-            await ctx.send(f'Expire tweets failed, exception: {e}')
+                deletion_count += 1
+            else:
+                ignored_count += 1
+        await ctx.send(
+            f'Total tweets remaining: {timeline}\n'.format(range(timeline)-deletion_count)
+            f'Deleted {deletion_count} tweet(s), ignored {ignored_count} tweet(s)'
+        )
 
     @commands.command()
     async def create_list(self, ctx, list_name: str, description: str):
         """Create a private Twitter list object"""
-        new_list = self.api.create_list(list_name, private, description)
+        new_list = self.api.create_list(name=list_name, mode='private', description=description)
         await ctx.send(
-            f'Created list object: '
-            f'name - {new_list.name}'
-            f'mode - {new_list.member_count}'
+            f'Created list object: \n'
+            f'name - {new_list.name}\n'
+            # f'mode - {new_list.mode}'
             f'created at - {new_list.created_at}'
-            f'owner - {new_list.user}'
+            # f'owner - {new_list.user}'
+        )
+
+    @commands.command(hidden=True)
+    async def delete_list(self, ctx, list_name: str):
+        """Delete a private Twitter list object"""
+        remove_list = self.api.destroy_list(slug=list_name, owner_screen_name=self.screen_name)
+        await ctx.send(
+            f'Deleted list object: \n'
+            f'name - {list_name}'
+        )
+
+    @commands.command()
+    async def list_lists(self, ctx):
+        """Lists available Twitter list objects"""
+        lists = self.api.lists_all(screen_name=self.screen_name)
+        formatted_lists = [x+'\n' for x.name in lists]
+        await ctx.send(
+            f'Available lists: \n'
+            formatted_lists
         )
 
     @commands.command()
     async def add_list_members(self, ctx, list_name: str, *members):
         """
-        Add Twitter users to a private list created
+        Add Twitter users to an existing private list
         
         Add up to 100 members to a list at a time.
         Lists may have up to 5,000 members.
         """
-        self.api.add_list_members(slug=list_name, owner_screen_name=self.screen_name)
+        added_members_list = self.api.add_list_members(slug=list_name, owner_screen_name=self.screen_name)
+        members_list = self.api.list_members(slug=list_name, owner_screen_name=self.screen_name)
+        await ctx.send(
+            f'Added members to list: \n'
+            f'name - {list_name}\n'
+            f'members added - {added_members_list}\n'
+            f'all members - {members_list}'
+        )
 
     @commands.command()
-    async def remove_list_members(self, ctx list_name: str, *members):
+    async def remove_list_members(self, ctx, list_name: str, *members):
         """
-        Remove Twitter users from a private list
+        Remove Twitter users from an existing private list
 
         Remove up to 100 members from a list at a time.
         Lists may have up to 5,000 members 
@@ -94,18 +114,23 @@ class TwitterCog(commands.Cog):
         remaining_members_list = [x.slug for x in list_obj.list_members()]
         removed_members_list = [x for x in members]
         await ctx.send(
-            f'Removed members from list: '
-            f'name - {new_list.name}'
-            f'members removed - {removed_members_list}'
+            f'Removed members from list: \n'
+            f'name - {list_name}\n'
+            f'members removed - {removed_members_list}\n'
             f'remaining members - {remaining_members_list}'
-            f'owner - {new_list.user}' # TODO finish output
         )
 
     @commands.command()
-    async def pm_list(self, ctx, user_list):
+    async def pm_list(self, ctx, list_name):
         """PM list timeline (20 tweets) to user"""
         # TODO: migrate tweets to table.
-        tweets = []
-        for username in usernames:
-            tweets.append(self.api.user_timeline(username))
-        
+        timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name)
+        await ctx.send(
+            f'List of tweets from {list_name}\n'
+            timeline
+        )
+
+    @commands.command()
+    async def display_list(self, ctx, user_list):
+        """Display list timeline (20 tweets) in message channel"""
+        pass

@@ -25,3 +25,4 @@ python bot.py
 [Discord.py Examples](https://github.com/Rapptz/discord.py)
 [Official Python Discord bot](https://github.com/python-discord/bot)
 [ModMail](https://github.com/kyb3r/modmail)
+[Tweepy Twitter API](http://docs.tweepy.org/en/latest/api.html?highlight=list#list-methods)
