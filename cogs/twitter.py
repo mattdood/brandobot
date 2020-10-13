@@ -140,11 +140,15 @@ class TwitterCog(commands.Cog):
                 {'user': x.user.screen_name},
                 {'created_at': x.created_at}
             ])
-        print(statuses)
+        statuses = Helpers.break_message(statuses)
+        # print(statuses)
         await ctx.send(
             f'List of tweets from {list_name}\n'
-            f'{timeline}'
+            # f'{timeline}'
         )
+        for message in statuses:
+            await ctx.send(f'{message}')
+        
 
     @commands.command()
     async def display_list(self, ctx, user_list):
