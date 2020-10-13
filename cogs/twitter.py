@@ -1,9 +1,11 @@
 import settings
+import json
+from itertools import chain
+from datetime import datetime, timedelta
+from utils.helpers import Helpers
 import discord
 from discord.ext import commands
-
 import tweepy
-from datetime import datetime, timedelta
 
 class TwitterCog(commands.Cog):
     
@@ -22,12 +24,14 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def rate_limit_tweets(self, ctx):
-        """Return status of the Twitter API rate limit"""
+        """Return status of the Twitter API rate limit as a .txt file"""
         status = self.api.rate_limit_status()
-        await ctx.send(
-            f'Current rate limit status: \n'
-            f'{status}'
-        )
+        file_path = 'logs/rate_limit.txt'
+        with open(file_path, 'w') as f:
+            f.write(json.dumps(status))
+            f.close()
+        file = discord.File(file_path, filename='rate_limit.txt')
+        await ctx.send(file=file, content='Current rate limit status')
 
     @commands.command()
     async def expire_tweets(self, ctx, days: int, test: bool):
@@ -81,7 +85,7 @@ class TwitterCog(commands.Cog):
     async def list_lists(self, ctx):
         """Lists available Twitter list objects"""
         lists = self.api.lists_all(screen_name=self.screen_name)
-        formatted_lists = [x.name + '\n' for x.name in lists]
+        formatted_lists = [x.name for x in lists]
         await ctx.send(
             f'Available lists: \n'
             f'{formatted_lists}'
