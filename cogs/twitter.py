@@ -2,7 +2,7 @@ import settings
 import json
 from itertools import chain
 from datetime import datetime, timedelta
-from utils.helpers import Helpers
+from cogs.utils.helpers import Helpers
 import discord
 from discord.ext import commands
 import tweepy
@@ -21,6 +21,13 @@ class TwitterCog(commands.Cog):
     # async def test(self, ctx):
     #     """Test that a Cog is reachable"""
     #     await ctx.send('test successful')
+
+    @commands.command()
+    async def test_wrap(self, ctx):
+        text = 'list of words to wrap'
+        text_list = text * 200
+        text_wrapped = Helpers.break_message(text_list)
+        print(text_wrapped)
 
     @commands.command()
     async def rate_limit_tweets(self, ctx):
