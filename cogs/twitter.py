@@ -99,13 +99,11 @@ class TwitterCog(commands.Cog):
         Add up to 100 members to a list at a time.
         Lists may have up to 5,000 members.
         """
-        added_members_list = self.api.add_list_members(slug=list_name, owner_screen_name=self.screen_name)
-        members_list = self.api.list_members(slug=list_name, owner_screen_name=self.screen_name)
+        members_list = ','.join(map(str, members))
+        added_members_list = self.api.add_list_members(slug=list_name, owner_screen_name=self.screen_name, screen_name=members_list)
         await ctx.send(
             f'Added members to list: \n'
             f'name - {list_name}\n'
-            f'members added - {added_members_list}\n'
-            f'all members - {members_list}'
         )
 
     @commands.command()
@@ -116,22 +114,26 @@ class TwitterCog(commands.Cog):
         Remove up to 100 members from a list at a time.
         Lists may have up to 5,000 members 
         """
-        remove_members = self.api.remove_list_members(slug=list_name, owner_screen_name=self.screen_name)
-        list_obj = self.api.get_list(slug=list_name, owner_screen_name=self.screen_name)
-        remaining_members_list = [x.slug for x in list_obj.list_members()]
-        removed_members_list = [x for x in members]
+        members_list = ','.join(map(str, members))
+        remove_members = self.api.remove_list_members(slug=list_name, owner_screen_name=self.screen_name, screen_name=members_list)
         await ctx.send(
             f'Removed members from list: \n'
             f'name - {list_name}\n'
-            f'members removed - {removed_members_list}\n'
-            f'remaining members - {remaining_members_list}'
         )
 
     @commands.command()
-    async def pm_list(self, ctx, list_name):
+    async def pm_list(self, ctx, list_name: str):
         """PM list timeline (20 tweets) to user"""
         # TODO: migrate tweets to table.
         timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name)
+        statuses = []
+        for x in timeline:
+            statuses.append([
+                {'text': x.text},
+                {'user': x.user.screen_name},
+                {'created_at': x.created_at}
+            ])
+        print(statuses)
         await ctx.send(
             f'List of tweets from {list_name}\n'
             f'{timeline}'
