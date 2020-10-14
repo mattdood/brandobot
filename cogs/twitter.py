@@ -24,13 +24,6 @@ class TwitterCog(commands.Cog):
     #     await ctx.send('test successful')
 
     @commands.command()
-    async def test_wrap(self, ctx):
-        text = 'list of words to wrap'
-        text_list = text * 200
-        text_wrapped = Helpers.break_message(text_list)
-        print(text_wrapped)
-
-    @commands.command()
     async def rate_limit_tweets(self, ctx):
         """Return status of the Twitter API rate limit as a .txt file"""
         status = self.api.rate_limit_status()
@@ -93,11 +86,19 @@ class TwitterCog(commands.Cog):
     async def list_lists(self, ctx):
         """Lists available Twitter list objects"""
         lists = self.api.lists_all(screen_name=self.screen_name)
-        formatted_lists = [x.name for x in lists]
+        formatted_lists = []
+        for x in lists:
+            formatted_lists.append({
+            'name': x.name,
+            'member count': x.member_count,
+            'description': x.description 
+            })
+        formatted_lists = Helpers.break_message(tabulate(formatted_lists, headers='keys', tablefmt='presto'))
         await ctx.send(
             f'Available lists: \n'
-            f'{formatted_lists}'
         )
+        for x in formatted_lists:
+            await ctx.send(f'{x}')
 
     @commands.command()
     async def add_list_members(self, ctx, list_name: str, *members):
@@ -107,12 +108,18 @@ class TwitterCog(commands.Cog):
         Add up to 100 members to a list at a time.
         Lists may have up to 5,000 members.
         """
-        members_list = ','.join(map(str, members))
-        added_members_list = self.api.add_list_members(slug=list_name, owner_screen_name=self.screen_name, screen_name=members_list)
+        added_members_list = []
+        for x in members:
+            self.api.add_list_member(slug=list_name, owner_screen_name=self.screen_name, screen_name=x)
+            added_members_list.append(x)
         await ctx.send(
             f'Added members to list: \n'
             f'name - {list_name}\n'
+            f'members added - \n'
         )
+        messages = Helpers.break_message(added_members_list)
+        for x in messages:
+            await ctx.send(f'{x}')
 
     @commands.command()
     async def remove_list_members(self, ctx, list_name: str, *members):
