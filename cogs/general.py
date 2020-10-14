@@ -4,7 +4,7 @@ from discord import Member, Role
 from discord.ext import commands
 
 
-class General(commands.Cog):
+class GeneralCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

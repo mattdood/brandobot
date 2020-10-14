@@ -33,7 +33,7 @@ class BrandoBot(commands.Bot):
 bot = BrandoBot(command_prefix='!', intents=intents)
 
 # add cogs
-bot.add_cog(General(bot))
+bot.add_cog(GeneralCog(bot))
 bot.add_cog(TwitterCog(bot))
 
 bot.run(settings.DISCORD_TOKEN)
