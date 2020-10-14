@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import settings
 
-from cogs.general import General
+from cogs.general import GeneralCog
 from cogs.twitter import TwitterCog
 
 # register intents
