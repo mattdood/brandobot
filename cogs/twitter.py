@@ -3,6 +3,7 @@ import json
 from itertools import chain
 from datetime import datetime, timedelta
 from cogs.utils.helpers import Helpers
+from tabulate import tabulate
 import discord
 from discord.ext import commands
 import tweepy
@@ -121,36 +122,88 @@ class TwitterCog(commands.Cog):
         Remove up to 100 members from a list at a time.
         Lists may have up to 5,000 members 
         """
-        members_list = ','.join(map(str, members))
-        remove_members = self.api.remove_list_members(slug=list_name, owner_screen_name=self.screen_name, screen_name=members_list)
+        removed_members_list = []
+        for x in members:
+            self.api.remove_list_member(slug=list_name, owner_screen_name=self.screen_name, screen_name=x)
+            removed_members_list.append(x)
         await ctx.send(
             f'Removed members from list: \n'
             f'name - {list_name}\n'
+            f'members removed - \n'
         )
+        messages = Helpers.break_message(removed_members_list)
+        for x in messages:
+            await ctx.send(f'{x}')
 
     @commands.command()
-    async def pm_list(self, ctx, list_name: str):
-        """PM list timeline (20 tweets) to user"""
-        # TODO: migrate tweets to table.
-        timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name)
-        statuses = []
-        for x in timeline:
-            statuses.append([
-                {'text': x.text},
-                {'user': x.user.screen_name},
-                {'created_at': x.created_at}
-            ])
-        statuses = Helpers.break_message(statuses)
-        # print(statuses)
+    async def pm_list(self, ctx, list_name: str, count=20, include_rts=True):
+        """
+        PM list timeline (default 20 tweets) to user
+        
+        count and retweets can be specified
+        """
+        timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name, include_entities=True, count=count, include_rts=include_rts)
+        table = TwitterCog._format_tweets(timeline)
+        await ctx.author.send(
+            f'List of tweets from {list_name}\n'
+        )
+        for x in table:
+            await ctx.author.send(f'{x}')
+        
+    @commands.command()
+    async def display_list(self, ctx, list_name: str, count=20, include_rts=True):
+        """
+        Display list timeline (default 20 tweets) in message channel
+        
+        count and retweets can be specified
+        """
+        timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name, include_entities=True, count=count, include_rts=include_rts)
+        table = TwitterCog._format_tweets(timeline)
         await ctx.send(
             f'List of tweets from {list_name}\n'
-            # f'{timeline}'
         )
-        for message in statuses:
-            await ctx.send(f'{message}')
-        
+        for x in table:
+            await ctx.send(f'{x}')
 
     @commands.command()
-    async def display_list(self, ctx, user_list):
-        """Display list timeline (20 tweets) in message channel"""
-        pass
+    async def pm_user(self, ctx, screen_name: str, count=20):
+        """
+        PM user timeline (default 20 tweets) to user
+        
+        count can be specified
+        """
+        timeline = self.api.user_timeline(screen_name=screen_name, count=count)
+        table = TwitterCog._format_tweets(timeline)
+        await ctx.author.send(
+            f'List of tweets from {screen_name}\n'
+        )
+        for x in table:
+            await ctx.author.send(f'{x}')
+
+    @commands.command()
+    async def display_user(self, ctx, screen_name: str, count=20):
+        """
+        Display user timeline (default 20 tweets) in message channel
+        
+        count can be specified
+        """
+        timeline = self.api.user_timeline(screen_name=screen_name, count=count)
+        table = TwitterCog._format_tweets(timeline)
+        await ctx.send(
+            f'List of tweets from {screen_name}\n'
+        )
+        for x in table:
+            await ctx.send(f'{x}')
+
+    @staticmethod
+    def _format_tweets(timeline: list):
+        statuses = []
+        for x in timeline:
+            statuses.append({
+                'text': Helpers.truncate_text(x.text),
+                'user': Helpers.truncate_text(x.user.screen_name),
+                'created_at': x.created_at, #datetime.time(x.created_at),
+                'link': ''.join(['<' + str(link['url']) + '>' for link in x.entities['urls']])
+            })
+        table = Helpers.break_message(tabulate(statuses, headers='keys', tablefmt='presto'))
+        return table
