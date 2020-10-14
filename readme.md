@@ -3,9 +3,12 @@
 
 ## Features
 - `command_prefix` is `!`
+  - use `!help` for a list of commands
 - Subclass of `commands.Bot` -> `BrandoBot`
-- Subclass of `commands.Cog` -> `General`
-  - Gives access to `General` commands
+- Subclass of `commands.Cog` -> `GeneralCog`
+  - Gives access to `GeneralCog` commands
+- Subclass of `commands.Cog` -> `TwitterCog`
+  - Gives access to `TwitterCog` commands
 
 ## Setup
 1. Create venv `.env` and add `.production/.secrets`
