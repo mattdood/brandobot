@@ -8,32 +8,26 @@ class Helpers(commands.Cog):
         self.bot = bot
 
     @staticmethod
-    def wrap_message(text: str, wrap_at=40):
-        """
-        Wraps long text in equal 40 character (or less) lines
-        
-        wrap_at can be specified, without being overshot
-        """
-        paragraph = []
-        for line in textwrap.wrap(text, wrap_at):
-            paragraph.append(line)
-        return paragraph
-
-    @staticmethod
     def break_message(text: str, wrap_at=40, limit=2000):
         """
         Breaks long text from lines into 2,000 character chunks
         
         wrap_at and limit can be specified, without being overshot
         """
-        text = Helpers.wrap_message(text=text, wrap_at=40)
-        message = []
         messages = []
-        i = 0
-        for line in text:
-            while i < limit/int(len(line) * wrap_at):
-                message.append(line)
-                i += 1
-            else:
-                messages.append(message)
-        return messages
+        for x in [text[i:i+limit] for i in range(0, len(text), limit)]:
+           messages.append(x)
+        return messages 
+
+    @staticmethod
+    def truncate_text(text: str, trunc_at=40):
+        """
+        Add elipses to the end of a long message as '...' to provide max lengths to messages.
+        This is used to create the illusion of max-width on the `tabulate` library.
+        A full-screen Discord client has a message window that is 60 characters wide.
+        
+        trunc_at can be specified, is defaulted to 40 characters
+        """
+        if len(text) > trunc_at:
+            return text[:trunc_at]
+        return text
