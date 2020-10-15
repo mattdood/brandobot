@@ -2,7 +2,7 @@
 cogs.general module
 ===================
 
-.. automodule:: cogs.general.GeneralCog
+.. automodule:: cogs.general
    :members:
    :undoc-members:
    :show-inheritance:
