@@ -9,11 +9,33 @@ from discord.ext import commands
 import tweepy
 
 class TwitterCog(commands.Cog):
-    
+    """Twitter functionality.
+
+    This cog is used to provide Twitter functionality through Tweepy. The basic implementation
+    utilizes `List` objects as curated timelines created by users.
+
+    The `ctx` argument is treated as `self` for commands and is omitted from documentation.
+
+    """
+
+
     auth = tweepy.OAuthHandler(settings.TWITTER_API_KEY, settings.TWITTER_API_SECRET_KEY)
     auth.set_access_token(settings.TWITTER_ACCESS_TOKEN, settings.TWITTER_ACCESS_TOKEN_SECRET)
 
     def __init__(self, bot):
+        """Twitter Authentication and bot extension.
+        
+        Inherits the bot instance and provides API extension with Tweepy.
+        Offers access to authenticated screenname and extendable `self.api`.
+
+        Attributes:
+            bot: BrandoBot (class `BrandoBot`
+                Instance of the BrandoBot client.
+            api: tweepy.API (class `API`)
+                Instance of Tweepy API.
+            screen_name: `api.me().screen_name`
+                Authenticated user screen name
+        """
         self.bot = bot
         self.api = tweepy.API(TwitterCog.auth)
         self.screen_name = self.api.me().screen_name
@@ -25,7 +47,15 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def rate_limit_tweets(self, ctx):
-        """Return status of the Twitter API rate limit as a .txt file"""
+        """Twitter API rate limit.
+        
+        Return status of the Twitter API rate limit as a .txt file.
+        
+        Returns:
+            logs/: Directory for log files.
+            rate_limit.txt: JSON dump of current API rate limit.
+            message (class Message): Message including `rate_limit.txt` file.
+        """
         status = self.api.rate_limit_status()
         file_path = 'logs/rate_limit.txt'
         with open(file_path, 'w') as f:
@@ -36,10 +66,17 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def expire_tweets(self, ctx, days: int, test: bool):
-        """
-        Delete tweets that are older than X days
+        """Delete tweets that are older than X days.
+
+        Deletes tweets older than a specified timeframe, can be run in test mode
+        by using the `True` parameter in `test`.
         
-        Passing 'True' denotes a test delete.
+        Parameters:
+            days (int): Number of days to save.
+            test (bool): `True` = testing, no delete. `False` = not testing, delete.
+
+        Returns:
+            message (class Message): Total tweets deleted and ignored.
         """
         deletion_count = 0
         ignored_count = 0
@@ -63,7 +100,21 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def create_list(self, ctx, list_name: str, description: str):
-        """Create a private Twitter list object"""
+        """Create a private Twitter list object.
+        
+        A Twitter list is a special Timeline object with only the specified members in it.
+        This is a curated feed of content by subject.
+
+        Parameters:
+            list_name (str): Twitter list name.
+            description (str): Description in quotations (`""`).
+
+        Returns:
+            message (class Message): The new list name and creation time.
+
+        TODO:
+            * Resolve incorrect `created_at` from 1970 to current year.
+        """
         new_list = self.api.create_list(name=list_name, mode='private', description=description)
         await ctx.send(
             f'Created list object: \n'
@@ -75,7 +126,16 @@ class TwitterCog(commands.Cog):
 
     @commands.command(hidden=True)
     async def delete_list(self, ctx, list_name: str):
-        """Delete a private Twitter list object"""
+        """Delete a private Twitter list object.
+        
+        Removes a specified `List` object using the `slug`.
+
+        Parameters:
+            list_name (str): Slug for the `List` object.
+
+        Returns:
+            message (class Message): Delete message confirmation.
+        """
         remove_list = self.api.destroy_list(slug=list_name, owner_screen_name=self.screen_name)
         await ctx.send(
             f'Deleted list object: \n'
@@ -84,7 +144,13 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def list_lists(self, ctx):
-        """Lists available Twitter list objects"""
+        """Lists available Twitter list objects.
+        
+        Creates a list of all `List` objects with names, member counts, and descriptions.
+
+        Returns:
+            message (class Message): Messages with list names, member counts, and descriptions.
+        """
         lists = self.api.lists_all(screen_name=self.screen_name)
         formatted_lists = []
         for x in lists:
@@ -102,11 +168,19 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def add_list_members(self, ctx, list_name: str, *members):
-        """
-        Add Twitter users to an existing private list
+        """Add Twitter users to an existing private list.
         
+        Does not require the `@`.
+        Adds a list of members to a list. 
         Add up to 100 members to a list at a time.
         Lists may have up to 5,000 members.
+        
+        Parameters:
+            list_name (str): Slug for the `List` object.
+            members (*): Unquoted list of usernames without `@`.
+
+        Returns:
+            message (class Message): List of members added.
         """
         added_members_list = []
         for x in members:
@@ -123,11 +197,18 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def remove_list_members(self, ctx, list_name: str, *members):
-        """
-        Remove Twitter users from an existing private list
+        """Remove Twitter users from an existing private list.
 
+        Does not require the `@`.
         Remove up to 100 members from a list at a time.
-        Lists may have up to 5,000 members 
+        Lists may have up to 5,000 members.
+
+        Parameters:
+            list_name (str): Slug for the `List` object.
+            members (*): Unquoted list of usernames without `@`.
+
+        Returns:
+            message (class Message): List of members removed.
         """
         removed_members_list = []
         for x in members:
@@ -144,10 +225,18 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def pm_list(self, ctx, list_name: str, count=20, include_rts=True):
-        """
-        PM list timeline (default 20 tweets) to user
+        """PM list timeline (default 20 tweets) to user.
+
+        Will send a list of messages with a specified count to the user via Discord PM.
+        These are formatted as a table.
         
-        count and retweets can be specified
+        Parameters:
+            list_name (str): Slug fro the `List` object.
+            Count (int): Default 20, specified count of tweets to return.
+            include_rts (bool): Default `True` to include retweets.
+
+        Returns:
+            message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name, include_entities=True, count=count, include_rts=include_rts)
         table = TwitterCog._format_tweets(timeline)
@@ -159,10 +248,18 @@ class TwitterCog(commands.Cog):
         
     @commands.command()
     async def display_list(self, ctx, list_name: str, count=20, include_rts=True):
-        """
-        Display list timeline (default 20 tweets) in message channel
+        """Display list timeline (default 20 tweets) in message channel
         
-        count and retweets can be specified
+        Will send a list of messages with a specified count to the channel.
+        These are formatted as a table.
+        
+        Parameters:
+            list_name (str): Slug fro the `List` object.
+            Count (int): Default 20, specified count of tweets to return.
+            include_rts (bool): Default `True` to include retweets.
+
+        Returns:
+            message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name, include_entities=True, count=count, include_rts=include_rts)
         table = TwitterCog._format_tweets(timeline)
@@ -174,10 +271,18 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def pm_user(self, ctx, screen_name: str, count=20):
-        """
-        PM user timeline (default 20 tweets) to user
+        """PM user timeline (default 20 tweets) to user.
         
-        count can be specified
+        Will send a list of messages with a specified count to the user via Discord PM.
+        These are formatted as a table.
+        
+        Parameters:
+            list_name (str): Slug fro the `List` object.
+            Count (int): Default 20, specified count of tweets to return.
+            include_rts (bool): Default `True` to include retweets.
+
+        Returns:
+            message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.user_timeline(screen_name=screen_name, count=count)
         table = TwitterCog._format_tweets(timeline)
@@ -189,10 +294,18 @@ class TwitterCog(commands.Cog):
 
     @commands.command()
     async def display_user(self, ctx, screen_name: str, count=20):
-        """
-        Display user timeline (default 20 tweets) in message channel
+        """Display user timeline (default 20 tweets) in message channel.
         
-        count can be specified
+        Will send a list of messages with a specified count to the channel.
+        These are formatted as a table.
+        
+        Parameters:
+            list_name (str): Slug fro the `List` object.
+            Count (int): Default 20, specified count of tweets to return.
+            include_rts (bool): Default `True` to include retweets.
+
+        Returns:
+            message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.user_timeline(screen_name=screen_name, count=count)
         table = TwitterCog._format_tweets(timeline)
@@ -204,6 +317,18 @@ class TwitterCog(commands.Cog):
 
     @staticmethod
     def _format_tweets(timeline: list):
+        """Formats tweets as a table.
+
+        Uses `Helpers.truncate_text` to create a max-width for columns that `tabulate` will
+        create when making tables. Also removes auto-embed to clean up message links.
+
+        Parameters:
+            timeline (list): A list of tweet objects.
+
+        Returns:
+            table (list): A list of rows modified to be a set character width.
+        """
+
         statuses = []
         for x in timeline:
             statuses.append({
