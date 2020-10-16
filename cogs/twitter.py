@@ -84,7 +84,7 @@ class TwitterCog(commands.Cog):
         cutoff_date = datetime.utcnow() - timedelta(days=days)
         
         timeline = tweepy.Cursor(self.api.user_timeline).items()
-        await ctx.send('Total tweets: {timeline}'.format(range(timeline)))
+        await ctx.send('**Total tweets:** {timeline}'.format(range(timeline)))
         for tweet in timeline:
             if tweet.created_at < cutoff_date:
                 if not test:
@@ -95,11 +95,11 @@ class TwitterCog(commands.Cog):
             else:
                 ignored_count += 1
         await ctx.send(
-            'Total tweets remaining: {timeline}\n Deleted {deletion_count} tweet(s), ignored {ignored_count} tweet(s)'.format(range(timeline))
+            '**Total tweets remaining:** {timeline}\n Deleted {deletion_count} tweet(s), ignored {ignored_count} tweet(s)'.format(range(timeline))
         )
 
     @commands.command()
-    async def create_list(self, ctx, list_name: str, description: str):
+    async def create_list(self, ctx, list_name: str, description: str = None):
         """Create a private Twitter list object.
         
         A Twitter list is a special Timeline object with only the specified members in it.
@@ -117,10 +117,10 @@ class TwitterCog(commands.Cog):
         """
         new_list = self.api.create_list(name=list_name, mode='private', description=description)
         await ctx.send(
-            f'Created list object: \n'
+            f'**Created list object:** \n'
             f'name - {new_list.name}\n'
             # f'mode - {new_list.mode}'
-            f'created at - {new_list.created_at}'
+            # f'created at - {new_list.created_at}'
             # f'owner - {new_list.user}'
         )
 
@@ -161,7 +161,7 @@ class TwitterCog(commands.Cog):
             })
         formatted_lists = Helpers.break_message(tabulate(formatted_lists, headers='keys', tablefmt='presto'))
         await ctx.send(
-            f'Available lists: \n'
+            f'**Available lists:** \n'
         )
         for x in formatted_lists:
             await ctx.send(f'{x}')
@@ -187,7 +187,7 @@ class TwitterCog(commands.Cog):
             self.api.add_list_member(slug=list_name, owner_screen_name=self.screen_name, screen_name=x)
             added_members_list.append(x)
         await ctx.send(
-            f'Added members to list: \n'
+            f'**Added members to list:** \n'
             f'name - {list_name}\n'
             f'members added - \n'
         )
@@ -215,7 +215,7 @@ class TwitterCog(commands.Cog):
             self.api.remove_list_member(slug=list_name, owner_screen_name=self.screen_name, screen_name=x)
             removed_members_list.append(x)
         await ctx.send(
-            f'Removed members from list: \n'
+            f'**Removed members from list:** \n'
             f'name - {list_name}\n'
             f'members removed - \n'
         )
@@ -224,7 +224,7 @@ class TwitterCog(commands.Cog):
             await ctx.send(f'{x}')
 
     @commands.command()
-    async def pm_list(self, ctx, list_name: str, count=20, include_rts=True):
+    async def pm_list(self, ctx, list_name: str, count: int = 20, include_rts: bool = True):
         """PM list timeline (default 20 tweets) to user.
 
         Will send a list of messages with a specified count to the user via Discord PM.
@@ -239,15 +239,15 @@ class TwitterCog(commands.Cog):
             message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name, include_entities=True, count=count, include_rts=include_rts)
-        table = TwitterCog._format_tweets(timeline)
+        tweets = TwitterCog._format_tweets(timeline)
         await ctx.author.send(
-            f'List of tweets from {list_name}\n'
+            f'**List of tweets from:** {list_name}\n'
         )
-        for x in table:
-            await ctx.author.send(f'{x}')
+        for x in tweets:
+            await ctx.author.send(embed=x)
         
     @commands.command()
-    async def display_list(self, ctx, list_name: str, count=20, include_rts=True):
+    async def display_list(self, ctx, list_name: str, count: int = 20, include_rts: bool = True):
         """Display list timeline (default 20 tweets) in message channel
         
         Will send a list of messages with a specified count to the channel.
@@ -262,15 +262,15 @@ class TwitterCog(commands.Cog):
             message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.list_timeline(slug=list_name, owner_screen_name=self.screen_name, include_entities=True, count=count, include_rts=include_rts)
-        table = TwitterCog._format_tweets(timeline)
+        tweets = TwitterCog._format_tweets(timeline)
         await ctx.send(
-            f'List of tweets from {list_name}\n'
+            f'**List of tweets from:** {list_name}\n'
         )
-        for x in table:
-            await ctx.send(f'{x}')
+        for x in tweets:
+            await ctx.send(embed=x)
 
     @commands.command()
-    async def pm_user(self, ctx, screen_name: str, count=20):
+    async def pm_user(self, ctx, screen_name: str, count: int = 20):
         """PM user timeline (default 20 tweets) to user.
         
         Will send a list of messages with a specified count to the user via Discord PM.
@@ -285,15 +285,15 @@ class TwitterCog(commands.Cog):
             message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.user_timeline(screen_name=screen_name, count=count)
-        table = TwitterCog._format_tweets(timeline)
+        tweets = TwitterCog._format_tweets(timeline)
         await ctx.author.send(
-            f'List of tweets from {screen_name}\n'
+            f'**List of tweets from:** {screen_name}\n'
         )
-        for x in table:
-            await ctx.author.send(f'{x}')
+        for x in tweets:
+            await ctx.author.send(embed=x)
 
     @commands.command()
-    async def display_user(self, ctx, screen_name: str, count=20):
+    async def display_user(self, ctx, screen_name: str, count: int = 20):
         """Display user timeline (default 20 tweets) in message channel.
         
         Will send a list of messages with a specified count to the channel.
