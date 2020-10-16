@@ -29,3 +29,4 @@ python bot.py
 [Official Python Discord bot](https://github.com/python-discord/bot)
 [ModMail](https://github.com/kyb3r/modmail)
 [Tweepy Twitter API](http://docs.tweepy.org/en/latest/api.html?highlight=list#list-methods)
+[PRAW for Reddit](https://praw.readthedocs.io/en/latest/code_overview/models/comment.html)

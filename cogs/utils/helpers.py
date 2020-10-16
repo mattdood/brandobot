@@ -1,4 +1,3 @@
-import textwrap
 import discord
 from discord.ext import commands
 
