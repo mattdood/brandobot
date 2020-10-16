@@ -3,6 +3,7 @@ from discord.ext import commands
 import settings
 
 from cogs.general import GeneralCog
+from cogs.reddit import RedditCog
 from cogs.twitter import TwitterCog
 
 # register intents
@@ -49,5 +50,6 @@ if __name__ == "__main__":
     # add cogs
     bot.add_cog(GeneralCog(bot))
     bot.add_cog(TwitterCog(bot))
+    bot.add_cog(RedditCog(bot))
 
     bot.run(settings.DISCORD_TOKEN)
