@@ -1,9 +1,5 @@
-import typing as t
 import discord
-from discord import Member, Role
 from discord.ext import commands
-
-from functools import wraps
 
 class GeneralCog(commands.Cog):
     """General commands available outside specific modules."""

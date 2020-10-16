@@ -29,7 +29,7 @@ class TwitterCog(commands.Cog):
         Offers access to authenticated screenname and extendable `self.api`.
 
         Attributes:
-            bot: BrandoBot (class `BrandoBot`
+            bot: BrandoBot (class `BrandoBot`)
                 Instance of the BrandoBot client.
             api: tweepy.API (class `API`)
                 Instance of Tweepy API.
