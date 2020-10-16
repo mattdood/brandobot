@@ -308,34 +308,55 @@ class TwitterCog(commands.Cog):
             message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.user_timeline(screen_name=screen_name, count=count)
-        table = TwitterCog._format_tweets(timeline)
+        tweets = TwitterCog._format_tweets(timeline)
         await ctx.send(
-            f'List of tweets from {screen_name}\n'
+            f'**List of tweets from:** {screen_name}\n'
         )
-        for x in table:
-            await ctx.send(f'{x}')
+        for x in tweets:
+            await ctx.send(embed=x)
 
     @staticmethod
     def _format_tweets(timeline: list):
         """Formats tweets as a table.
 
-        Uses `Helpers.truncate_text` to create a max-width for columns that `tabulate` will
-        create when making tables. Also removes auto-embed to clean up message links.
+        Creates `Embed` objects from Tweepy `Status` objects.
 
         Parameters:
             timeline (list): A list of tweet objects.
 
         Returns:
             table (list): A list of rows modified to be a set character width.
-        """
 
+        TODO:
+            * media: add `set_image` to Discord message.
+        """
         statuses = []
         for x in timeline:
+            media = []
+            
+            if 'media' in x.entities:
+                for y in x.entities['media']:
+                    if 'media_url_https' in y:
+                        if y['media_url_https'] is not '':
+                            media.append(y['media_url_https'])
             statuses.append({
-                'text': Helpers.truncate_text(x.text),
-                'user': Helpers.truncate_text(x.user.screen_name),
-                'created_at': x.created_at, #datetime.time(x.created_at),
-                'link': ''.join(['<' + str(link['url']) + '>' for link in x.entities['urls']])
+                'text': x.text,
+                'user': x.user.screen_name,
+                'retweet_count': x.retweet_count,
+                'favorite_count': x.favorite_count,
+                'media': [media[0] if len(media) > 0 else ''],
+                'created_at': x.created_at,
+                'link': [link['url'] for link in x.entities['urls']]
             })
-        table = Helpers.break_message(tabulate(statuses, headers='keys', tablefmt='presto'))
-        return table
+        embeds = []
+        for x in statuses:
+            embed = discord.Embed(title=x['user'], color=0x1DA1F2)
+            embed.set_author(name='BrandoBot#9684', url='https://github.com/mattdood')
+            embed.description = x['text']
+            embed.add_field(name='# RTs', value=x['retweet_count'], inline=True)
+            embed.add_field(name='# Favs', value=x['favorite_count'], inline=True)
+            # embed.set_image(url=x['media'])
+            embed.url = x['link']
+            embed.set_footer(text=f'{x["created_at"]}')
+            embeds.append(embed)
+        return embeds
