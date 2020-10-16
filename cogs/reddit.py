@@ -1,5 +1,6 @@
 import praw
 import settings
+from datetime import datetime
 from cogs.utils.helpers import Helpers
 import discord
 from discord.ext import commands
@@ -10,7 +11,6 @@ class RedditCog(commands.Cog):
     This cog is used to provide Reddit functionality.
 
     The `ctx` argument is treated as `self` for commands and is omitted from documentation.
-
     """
 
     reddit = praw.Reddit(
@@ -36,23 +36,18 @@ class RedditCog(commands.Cog):
         self.reddit = RedditCog.reddit
 
     @commands.command()
-    async def random_subreddit(self, ctx):
-        """Discover a random sub.
+    async def random_sub(self, ctx):
+        """Hot posts from a random subreddit.
 
-        Fetch 5 of the most recent posts from a random subreddit.
+        Gets hot posts from random subreddit.
 
         Returns:
-            message (class Message): Subreddit posts and links.
+            message (class Embed): A series of embedded messages with `Submission` content.
         """
         random_sub = self.reddit.random_subreddit()
-        
-        posts = RedditCog._fetch_recent(random_sub, 5)
-        posts = Helpers.break_message(posts)
+        content = random_sub.hot(limit=5)
+        posts = RedditCog._structure_posts(content)
                 
-        await ctx.send(
-            f'Fetched a random subreddit: \n'
-            f'{random_sub.display_name}\n'
-        )
         for x in posts:
             await ctx.send(f'{x}')
 
