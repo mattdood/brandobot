@@ -52,39 +52,100 @@ class RedditCog(commands.Cog):
             await ctx.send(f'{x}')
 
     @commands.command()
-    async def hot_posts(self, ctx, sub: str, count=None):
-        subreddit = self.reddit.subreddit(sub).hot(limit=count)
-        
-        posts = RedditCog._structure_posts(subreddit)
-        posts = Helpers.break_message(posts)
+    async def pm_random_sub(self, ctx):
+        """PM hot posts from a random subreddit.
+
+        Gets hot posts from random subreddit as a Discord DM.
+
+        Returns:
+            message (class Embed): A series of embedded messages with `Submission` content.
+        """
+        random_sub = self.reddit.random_subreddit()
+        content = random_sub.hot(limit=5)
+        posts = RedditCog._structure_posts(content)
                 
-        await ctx.send(
-            f'Fetched posts from: \n'
-            f'{subreddit.display_name}\n'
-        )
+        for x in posts:
+            await ctx.author.send(f'{x}')
+
+    @commands.command()
+    async def hot_posts(self, ctx, sub: str, count: int = 5):
+        """Hot posts from a subreddit.
+
+        Gets hot posts from a sub of your choice. Must provide `count`
+        in a int format.
+
+        Parameters:
+            sub (str): The subreddit name as a string, without the 'r/'
+            count (str): Default `5` posts.
+        Returns:
+            message (class Embed): A series of embedded messages with `Submission` content.
+        """
+        subreddit = self.reddit.subreddit(sub)        
+        content = subreddit.hot(limit=count)
+        posts = RedditCog._structure_posts(content)
+
         for x in posts:
             await ctx.send(f'{x}')
 
     @commands.command()
-    async def top_posts(self, ctx, sub: str, timeframe=None):
+    async def pm_hot_posts(self, ctx, sub: str, count: int = 5):
+        """PM hot posts from a subreddit.
+
+        Gets hot posts from a sub of your choice and DMs them to you. 
+        Must provide `count` in a int format.
+
+        Parameters:
+            sub (str): The subreddit name as a string, without the 'r/'
+            count (str): Default `5` posts.
+        Returns:
+            message (class Embed): A series of embedded messages with `Submission` content.
+        """
+        subreddit = self.reddit.subreddit(sub)        
+        content = subreddit.hot(limit=count)
+        posts = RedditCog._structure_posts(content)
+
+        for x in posts:
+            await ctx.author.send(f'{x}')
+
+    @commands.command()
+    async def top_posts(self, ctx, sub: str, timeframe: str = 'hour'):
+        """Top posts from a subreddit.
+
+        Gets top post from a sub of your choice. Must provide `timeframe`
+        in a string format.
+
+        Parameters:
+            sub (str): The subreddit name as a string, without the 'r/'
+            timeframe (str): Default `hour`, other acceptable options are below.
+        Returns:
+            message (class Embed): A series of embedded messages with `Submission` content.
+        """
         subreddit = self.reddit.subreddit(sub)
         content = subreddit.top(timeframe)
-
         posts = RedditCog._structure_posts(content)
-                
-        await ctx.send(
-            f'**Fetched posts from:**\n'
-            f'`{subreddit.display_name}`\n'
-            f'**Posts:**\n'
-        )
-        # TODO
-        for x in posts:
-            embed = discord.Embed(title=x['title'], color=0x00ff00)
-            embed.add_field(name=x[])
-            await ctx.send(
 
-                embed=value
-            )
+        for x in posts:
+            await ctx.send(embed=x)
+
+    @commands.command()
+    async def pm_top_posts(self, ctx, sub: str, timeframe: str = 'hour'):
+        """PM top posts from a subreddit.
+
+        Gets top post from a sub of your choice and sends them in a DM.
+        Must provide `timeframe` in a string format.
+
+        Parameters:
+            sub (str): The subreddit name as a string, without the 'r/'
+            timeframe (str): Default `hour`, other acceptable options are below.
+        Returns:
+            message (class Embed): A series of embedded messages with `Submission` content.
+        """
+        subreddit = self.reddit.subreddit(sub)
+        content = subreddit.top(timeframe)
+        posts = RedditCog._structure_posts(content)
+
+        for x in posts:
+            await ctx.author.send(embed=x)
 
     @staticmethod
     def _structure_posts(content):
