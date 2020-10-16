@@ -117,6 +117,8 @@ class RedditCog(commands.Cog):
         Parameters:
             sub (str): The subreddit name as a string, without the 'r/'
             timeframe (str): Default `hour`, other acceptable options are below.
+        Options:
+            timeframe (str): Available options: "hour", "day", "week", "month", "year", "all".
         Returns:
             message (class Embed): A series of embedded messages with `Submission` content.
         """
@@ -137,6 +139,8 @@ class RedditCog(commands.Cog):
         Parameters:
             sub (str): The subreddit name as a string, without the 'r/'
             timeframe (str): Default `hour`, other acceptable options are below.
+        Options:
+            timeframe (str): Available options: "hour", "day", "week", "month", "year", "all".
         Returns:
             message (class Embed): A series of embedded messages with `Submission` content.
         """
@@ -147,8 +151,57 @@ class RedditCog(commands.Cog):
         for x in posts:
             await ctx.author.send(embed=x)
 
+    @commands.command()
+    async def pm_comments(self, ctx, post_id: str, sort: str = 'top'):
+        """PM a list of comments from a `Submission`.
+
+        Send a Discord message of comments from a `Submission` object.
+        Takes parameters for different sort options for comments. 
+        Parses the `CommentForest` return from `Submission`.
+
+        Parameters:
+            post_id (str): The `post_id` from a Reddit post.
+            sort (str): Default `top`, has other options.
+        Options:
+            sort (str): Available options: "confidence", "controversial", "new", "old", "q&a", "top".
+        Returns:
+            message (class Embed): A series of embedded messages with `Comment` content.
+        """
+        submission = self.reddit.submission(post_id)
+        submission.comment_sort = sort 
+        content = submission.comments.list()
+        comments = RedditCog._structure_comments(content)
+
+        for x in comments:
+            await ctx.author.send(embed=x)
+
+    @commands.command()
+    async def pm_more_comments(self, ctx, comment_id: str, sort: str = 'top'):
+        """PM a list of comments from a `Comment`.
+
+        Send a Discord message of comments from a `Comment` object.
+        Takes parameters for different sort options for comments. 
+        Parses the `CommentForest` return from `Comment`.
+
+        Parameters:
+            comment_id (str): The `comment_id` from a Reddit comment.
+            sort (str): Default `top`, has other options.
+        Options:
+            sort (str): Available options: "confidence", "controversial", "new", "old", "q&a", "top".
+        Returns:
+            message (class Embed): A series of embedded messages with `Comment` content.
+        """
+        comment = self.reddit.comment(comment_id)
+        comment.refresh()
+        comment.reply_sort = sort
+        content = comment.replies
+        comments = RedditCog._structure_comments(content)
+
+        for x in comments:
+            await ctx.author.send(embed=x) 
+
     @staticmethod
-    def _structure_posts(content):
+    def _structure_posts(content: list):
         """Structure Reddit posts.
 
         Create `Embed` objects as Discord messages for each post.
@@ -189,5 +242,46 @@ class RedditCog(commands.Cog):
             embed.add_field(name='Post ID', value=x['post_id'], inline=True)
             embed.add_field(name='OP', value=x['post_author'], inline=True)
             embed.set_footer(text=f'Use `!post_comments <post_id>` to read more!  |  {x["created_at"]}')
+            embeds.append(embed)
+        return embeds
+
+    @staticmethod
+    def _structure_comments(content: list):
+        """Structure `Submission` comments.
+
+        Create `Embed` objects as Discord messages for each post comment.
+        Structured from a dictionary of content data from each message.
+
+        Parameters:
+            content (class CommentForest): A list of `Comment` subreddit objects.
+
+        Returns:
+            embeds (class Embed): A formatted list of `Embed` messages to be sent to Discord.
+        """
+        comments = []
+        for x in content:
+            comments.append({
+                'submission_name': x.submission.title,
+                'subreddit': x.subreddit.display_name,
+                'body': x.body,
+                'score': str(x.score),
+                'num_comments': len(x.replies),
+                'comment_id': x.id,
+                'comment_author': x.author.name,
+                'url': x.permalink,
+                'created_at': datetime.utcfromtimestamp(x.created_utc).strftime('%m-%d-%Y %H:%M:%S')
+            })
+        embeds = []
+        for x in comments:
+            embed = discord.Embed(title=x['submission_name'], color=0xFF5700)
+            embed.set_author(name='BrandoBot#9684', url='https://github.com/mattdood')
+            embed.description = x['body']
+            embed.url = 'https://reddit.com' + x['url']
+            embed.add_field(name='Score', value=x['score'], inline=True)
+            embed.add_field(name='# Comments', value=x['num_comments'], inline=True)
+            embed.add_field(name='Subreddit', value=x['subreddit'], inline=True)
+            embed.add_field(name='Comment ID', value=x['comment_id'], inline=True)
+            embed.add_field(name='OP', value=x['comment_author'], inline=True)
+            embed.set_footer(text=f'Use `!pm_more_comments <comment_id>` to read more!  |  {x["created_at"]}')
             embeds.append(embed)
         return embeds
