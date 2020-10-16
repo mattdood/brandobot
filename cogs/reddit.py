@@ -68,6 +68,36 @@ class RedditCog(commands.Cog):
             await ctx.author.send(f'{x}')
 
     @commands.command()
+    async def pm_stream_sub(self, ctx, sub: str, phrase: str = None):
+        """PM a stream of `Submission`s from a `Subreddit`.
+
+        Sends a stream of `Submission` objects as Discord DMs. 
+        Optionally, you can provide a search phrase that will send a single
+        DM with that object once a title containing that phrase is found.
+
+        Parameters:
+            sub (str): The `Subreddit` name to stream.
+            phrase (str): Default `None`, multi-word phrases require quotations ("").
+        Results:
+            message (class Embed): A series of embedded messages with `Submission` content.
+        TODO:
+            * Stop sending duplicates of everything. WTF.
+        """
+        subreddit = self.reddit.subreddit(sub)
+        posts = []
+        for x in subreddit.stream.submissions():
+            if phrase:
+                if phrase in x.title.lower():
+                    posts.append(x)
+                    break
+            while len(posts) < 10:
+                posts.append(x)
+                print(len(posts))
+        content = RedditCog._structure_posts(posts)
+        for x in content:
+            await ctx.author.send(embed=x)
+
+    @commands.command()
     async def hot_posts(self, ctx, sub: str, count: int = 5):
         """Hot posts from a subreddit.
 
