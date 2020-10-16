@@ -7,7 +7,7 @@ class Helpers(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def break_message(text: str, wrap_at=40, limit=2000):
+    def break_message(text: str, wrap_at: int = 40, limit: int = 2000):
         """Breaks long text from lines.
         
         Breaks text into 2,000 character chunks for Discord messages.
@@ -23,7 +23,7 @@ class Helpers(commands.Cog):
            messages.append(x)
         return messages 
 
-    def truncate_text(text: str, trunc_at=40):
+    def truncate_text(text: str, trunc_at: int = 40):
         """Add elipses on long messages.
 
         Add elipses to the end of a long message as '...' to provide max lengths to messages.
