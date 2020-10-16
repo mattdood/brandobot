@@ -149,12 +149,45 @@ class RedditCog(commands.Cog):
 
     @staticmethod
     def _structure_posts(content):
+        """Structure Reddit posts.
+
+        Create `Embed` objects as Discord messages for each post.
+        Structured from a dictionary of content data from each message.
+
+        Parameters:
+            content (class Submission): A list of `Submission` subreddit objects.
+
+        Returns:
+            embeds (class Embed): A formatted list of `Embed` messages to be sent to Discord.
+        """
         posts = []
         for x in content:
             posts.append({
-                'title': '[' + x.title + '](' + x.url + ')',
-                # 'score': str(x.score),
-                # 'id': str(x.id),
-                # 'url': '<' + x.url + '>'
+                'title': x.title,
+                'subreddit': x.subreddit_name_prefixed,
+                'self_text': x.selftext,
+                'thumbnail': x.thumbnail,
+                'score': str(x.score),
+                'num_comments': x.num_comments,
+                'flair': x.link_flair_text,
+                'post_id': x.id,
+                'post_author': x.author.name,
+                'url': x.url,
+                'created_at': datetime.utcfromtimestamp(x.created_utc).strftime('%m-%d-%Y %H:%M:%S')
             })
-        return posts
+        embeds = []
+        for x in posts:
+            embed = discord.Embed(title=x['title'], color=0xFF5700)
+            embed.set_author(name='BrandoBot#9684', url='https://github.com/mattdood')
+            embed.description = x['self_text']
+            embed.set_image(url=x['thumbnail'])
+            embed.url = x['url']
+            embed.add_field(name='Score', value=x['score'], inline=True)
+            embed.add_field(name='# Comments', value=x['num_comments'], inline=True)
+            embed.add_field(name='Flair', value=x['flair'], inline=True)
+            embed.add_field(name='Subreddit', value=x['subreddit'], inline=True)
+            embed.add_field(name='Post ID', value=x['post_id'], inline=True)
+            embed.add_field(name='OP', value=x['post_author'], inline=True)
+            embed.set_footer(text=f'Use `!post_comments <post_id>` to read more!  |  {x["created_at"]}')
+            embeds.append(embed)
+        return embeds
