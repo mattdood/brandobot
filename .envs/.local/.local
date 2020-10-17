@@ -1,0 +1,21 @@
+# Discord
+# -----------------------------------------------------------------------
+DISCORD_TOKEN=
+DISCORD_GUILD=
+DISCORD_GUILD_ID=
+
+# Reddit
+# -----------------------------------------------------------------------
+REDDIT_CLIENT_ID=
+REDDIT_CLIENT_SECRET=
+REDDIT_USERNAME=
+REDDIT_PASSWORD=
+REDDIT_USER_AGENT=
+
+# Twitter
+# -----------------------------------------------------------------------
+TWITTER_API_KEY=
+TWITTER_API_SECRET_KEY=
+TWITTER_ACCESS_TOKEN=
+TWITTER_ACCESS_TOKEN_SECRET=
+BEARER_TOKEN=
