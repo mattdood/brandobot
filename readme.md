@@ -1,5 +1,29 @@
 ![Dio asset image](assets/img/dio-asset.jpeg)
 
+<h1 align="center">
+  <br>
+  Brando Bot
+</h1>
+
+<h4 align="center">Reddit, Twitter, and more to come.</h4>
+
+<p align="center">
+  <a href="https://github.com/pre-commit/pre-commit">
+    <img alt="pre-commit" src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white">
+  </a>
+  <a href="https://github.com/Rapptz/discord.py/">
+     <img src="https://img.shields.io/badge/discord-py-blue.svg" alt="discord.py">
+  </a>
+</p>
+<p align="center">
+  <a href="https://github.com/ambv/black">
+    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code Style: Black">
+  </a>
+  <a href="http://makeapullrequest.com">
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
+  </a>
+</p>
+
 # Overview
 You thought this was a Discord bot, but **it was me, Dio!**
 
