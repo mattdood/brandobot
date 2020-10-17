@@ -16,6 +16,7 @@ load_dotenv(ENV_PATH)
 # Discord secrets
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 DISCORD_GUILD = os.getenv("DISCORD_GUILD")
+DISCORD_GUILD_ID = int(os.getenv("DISCORD_GUILD_ID"))
 
 # Twitter secrets
 TWITTER_API_KEY = os.getenv("TWITTER_API_KEY")

@@ -40,11 +40,6 @@ class TwitterCog(commands.Cog):
         self.api = tweepy.API(TwitterCog.auth)
         self.screen_name = self.api.me().screen_name
 
-    # @commands.command()
-    # async def test(self, ctx):
-    #     """Test that a Cog is reachable"""
-    #     await ctx.send('test successful')
-
     @commands.command()
     async def rate_limit_tweets(self, ctx):
         """Twitter API rate limit.

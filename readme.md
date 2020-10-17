@@ -30,3 +30,7 @@ python bot.py
 [ModMail](https://github.com/kyb3r/modmail)
 [Tweepy Twitter API](http://docs.tweepy.org/en/latest/api.html?highlight=list#list-methods)
 [PRAW for Reddit](https://praw.readthedocs.io/en/latest/code_overview/models/comment.html)
+
+## Future
+oblique strategies - brian eno & peter schmidt
+pollen count
