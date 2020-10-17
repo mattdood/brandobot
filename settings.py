@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 ROOT_DIR = Path(__file__).resolve(strict=True).parent
 
-ENV_PATH = join(ROOT_DIR, ".env/.production/.secrets")
+ENV_PATH = join(ROOT_DIR, ".envs/.production/.production")
 
 # Loads the `.secrets` file
 load_dotenv(ENV_PATH)
