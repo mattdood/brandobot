@@ -5,6 +5,7 @@ from brandobot.brando import BrandoBot
 from cogs.general import GeneralCog
 from cogs.reddit import RedditCog
 from cogs.twitter import TwitterCog
+from cogs.weather import WeatherCog
 
 # register intents
 intents = discord.Intents.default()
@@ -19,6 +20,7 @@ def main():
     bot.add_cog(GeneralCog(bot))
     bot.add_cog(TwitterCog(bot))
     bot.add_cog(RedditCog(bot))
+    bot.add_cog(WeatherCog(bot))
 
     bot.run(settings.DISCORD_TOKEN)
 

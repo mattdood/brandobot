@@ -19,3 +19,11 @@ TWITTER_API_SECRET_KEY=
 TWITTER_ACCESS_TOKEN=
 TWITTER_ACCESS_TOKEN_SECRET=
 BEARER_TOKEN=
+
+# OpenWeatherMap (Weather)
+# -----------------------------------------------------------------------
+OPENWEATHERMAP_API_KEY=
+
+# Ambee (Pollen)
+# -----------------------------------------------------------------------
+AMBEE_API_KEY=
