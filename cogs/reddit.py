@@ -1,9 +1,11 @@
-import praw
-import settings
 from datetime import datetime
-from cogs.utils.helpers import Helpers
+
 import discord
+import praw
 from discord.ext import commands
+
+import settings
+
 
 class RedditCog(commands.Cog):
     """Reddit functionality.
@@ -18,12 +20,12 @@ class RedditCog(commands.Cog):
         client_secret=settings.REDDIT_CLIENT_SECRET,
         username=settings.REDDIT_USERNAME,
         password=settings.REDDIT_PASSWORD,
-        user_agent=settings.REDDIT_USER_AGENT
+        user_agent=settings.REDDIT_USER_AGENT,
     )
 
     def __init__(self, bot):
         """Reddit Authentication and bot extension.
-        
+
         Inherits the bot instance and provides API extension with Reddit.
 
         Attributes:
@@ -47,9 +49,9 @@ class RedditCog(commands.Cog):
         random_sub = self.reddit.random_subreddit()
         content = random_sub.hot(limit=5)
         posts = RedditCog._structure_posts(content)
-                
+
         for x in posts:
-            await ctx.send(f'{x}')
+            await ctx.send(f"{x}")
 
     @commands.command()
     async def pm_random_sub(self, ctx):
@@ -63,15 +65,15 @@ class RedditCog(commands.Cog):
         random_sub = self.reddit.random_subreddit()
         content = random_sub.hot(limit=5)
         posts = RedditCog._structure_posts(content)
-                
+
         for x in posts:
-            await ctx.author.send(f'{x}')
+            await ctx.author.send(f"{x}")
 
     @commands.command()
     async def pm_stream_sub(self, ctx, sub: str, phrase: str = None):
         """PM a stream of `Submission`s from a `Subreddit`.
 
-        Sends a stream of `Submission` objects as Discord DMs. 
+        Sends a stream of `Submission` objects as Discord DMs.
         Optionally, you can provide a search phrase that will send a single
         DM with that object once a title containing that phrase is found.
 
@@ -110,18 +112,18 @@ class RedditCog(commands.Cog):
         Returns:
             message (class Embed): A series of embedded messages with `Submission` content.
         """
-        subreddit = self.reddit.subreddit(sub)        
+        subreddit = self.reddit.subreddit(sub)
         content = subreddit.hot(limit=count)
         posts = RedditCog._structure_posts(content)
 
         for x in posts:
-            await ctx.send(f'{x}')
+            await ctx.send(f"{x}")
 
     @commands.command()
     async def pm_hot_posts(self, ctx, sub: str, count: int = 5):
         """PM hot posts from a subreddit.
 
-        Gets hot posts from a sub of your choice and DMs them to you. 
+        Gets hot posts from a sub of your choice and DMs them to you.
         Must provide `count` in a int format.
 
         Parameters:
@@ -130,15 +132,15 @@ class RedditCog(commands.Cog):
         Returns:
             message (class Embed): A series of embedded messages with `Submission` content.
         """
-        subreddit = self.reddit.subreddit(sub)        
+        subreddit = self.reddit.subreddit(sub)
         content = subreddit.hot(limit=count)
         posts = RedditCog._structure_posts(content)
 
         for x in posts:
-            await ctx.author.send(f'{x}')
+            await ctx.author.send(f"{x}")
 
     @commands.command()
-    async def top_posts(self, ctx, sub: str, timeframe: str = 'hour'):
+    async def top_posts(self, ctx, sub: str, timeframe: str = "hour"):
         """Top posts from a subreddit.
 
         Gets top post from a sub of your choice. Must provide `timeframe`
@@ -160,7 +162,7 @@ class RedditCog(commands.Cog):
             await ctx.send(embed=x)
 
     @commands.command()
-    async def pm_top_posts(self, ctx, sub: str, timeframe: str = 'hour'):
+    async def pm_top_posts(self, ctx, sub: str, timeframe: str = "hour"):
         """PM top posts from a subreddit.
 
         Gets top post from a sub of your choice and sends them in a DM.
@@ -182,11 +184,11 @@ class RedditCog(commands.Cog):
             await ctx.author.send(embed=x)
 
     @commands.command()
-    async def pm_comments(self, ctx, post_id: str, sort: str = 'top'):
+    async def pm_comments(self, ctx, post_id: str, sort: str = "top"):
         """PM a list of comments from a `Submission`.
 
         Send a Discord message of comments from a `Submission` object.
-        Takes parameters for different sort options for comments. 
+        Takes parameters for different sort options for comments.
         Parses the `CommentForest` return from `Submission`.
 
         Parameters:
@@ -198,7 +200,7 @@ class RedditCog(commands.Cog):
             message (class Embed): A series of embedded messages with `Comment` content.
         """
         submission = self.reddit.submission(post_id)
-        submission.comment_sort = sort 
+        submission.comment_sort = sort
         content = submission.comments.list()
         comments = RedditCog._structure_comments(content)
 
@@ -206,11 +208,11 @@ class RedditCog(commands.Cog):
             await ctx.author.send(embed=x)
 
     @commands.command()
-    async def pm_more_comments(self, ctx, comment_id: str, sort: str = 'top'):
+    async def pm_more_comments(self, ctx, comment_id: str, sort: str = "top"):
         """PM a list of comments from a `Comment`.
 
         Send a Discord message of comments from a `Comment` object.
-        Takes parameters for different sort options for comments. 
+        Takes parameters for different sort options for comments.
         Parses the `CommentForest` return from `Comment`.
 
         Parameters:
@@ -228,7 +230,7 @@ class RedditCog(commands.Cog):
         comments = RedditCog._structure_comments(content)
 
         for x in comments:
-            await ctx.author.send(embed=x) 
+            await ctx.author.send(embed=x)
 
     @staticmethod
     def _structure_posts(content: list):
@@ -245,33 +247,39 @@ class RedditCog(commands.Cog):
         """
         posts = []
         for x in content:
-            posts.append({
-                'title': x.title,
-                'subreddit': x.subreddit_name_prefixed,
-                'self_text': x.selftext,
-                'thumbnail': x.thumbnail,
-                'score': str(x.score),
-                'num_comments': x.num_comments,
-                'flair': x.link_flair_text,
-                'post_id': x.id,
-                'post_author': x.author.name,
-                'url': x.url,
-                'created_at': datetime.utcfromtimestamp(x.created_utc).strftime('%m-%d-%Y %H:%M:%S')
-            })
+            posts.append(
+                {
+                    "title": x.title,
+                    "subreddit": x.subreddit_name_prefixed,
+                    "self_text": x.selftext,
+                    "thumbnail": x.thumbnail,
+                    "score": str(x.score),
+                    "num_comments": x.num_comments,
+                    "flair": x.link_flair_text,
+                    "post_id": x.id,
+                    "post_author": x.author.name,
+                    "url": x.url,
+                    "created_at": datetime.utcfromtimestamp(x.created_utc).strftime(
+                        "%m-%d-%Y %H:%M:%S"
+                    ),
+                }
+            )
         embeds = []
         for x in posts:
-            embed = discord.Embed(title=x['title'], color=0xFF5700)
-            embed.set_author(name='BrandoBot#9684', url='https://github.com/mattdood')
-            embed.description = x['self_text']
-            embed.set_image(url=x['thumbnail'])
-            embed.url = x['url']
-            embed.add_field(name='Score', value=x['score'], inline=True)
-            embed.add_field(name='# Comments', value=x['num_comments'], inline=True)
-            embed.add_field(name='Flair', value=x['flair'], inline=True)
-            embed.add_field(name='Subreddit', value=x['subreddit'], inline=True)
-            embed.add_field(name='Post ID', value=x['post_id'], inline=True)
-            embed.add_field(name='OP', value=x['post_author'], inline=True)
-            embed.set_footer(text=f'Use `!post_comments <post_id>` to read more!  |  {x["created_at"]}')
+            embed = discord.Embed(title=x["title"], color=0xFF5700)
+            embed.set_author(name="BrandoBot#9684", url="https://github.com/mattdood")
+            embed.description = x["self_text"]
+            embed.set_image(url=x["thumbnail"])
+            embed.url = x["url"]
+            embed.add_field(name="Score", value=x["score"], inline=True)
+            embed.add_field(name="# Comments", value=x["num_comments"], inline=True)
+            embed.add_field(name="Flair", value=x["flair"], inline=True)
+            embed.add_field(name="Subreddit", value=x["subreddit"], inline=True)
+            embed.add_field(name="Post ID", value=x["post_id"], inline=True)
+            embed.add_field(name="OP", value=x["post_author"], inline=True)
+            embed.set_footer(
+                text=f'Use `!post_comments <post_id>` to read more!  |  {x["created_at"]}'
+            )
             embeds.append(embed)
         return embeds
 
@@ -290,28 +298,36 @@ class RedditCog(commands.Cog):
         """
         comments = []
         for x in content:
-            comments.append({
-                'submission_name': x.submission.title,
-                'subreddit': x.subreddit.display_name,
-                'body': x.body,
-                'score': str(x.score),
-                'num_comments': len(x.replies),
-                'comment_id': x.id,
-                'comment_author': x.author.name,
-                'url': x.permalink,
-                'created_at': datetime.utcfromtimestamp(x.created_utc).strftime('%m-%d-%Y %H:%M:%S')
-            })
+            comments.append(
+                {
+                    "submission_name": x.submission.title,
+                    "subreddit": x.subreddit.display_name,
+                    "body": x.body,
+                    "score": str(x.score),
+                    "num_comments": len(x.replies),
+                    "comment_id": x.id,
+                    "comment_author": x.author.name,
+                    "url": x.permalink,
+                    "created_at": datetime.utcfromtimestamp(x.created_utc).strftime(
+                        "%m-%d-%Y %H:%M:%S"
+                    ),
+                }
+            )
         embeds = []
         for x in comments:
-            embed = discord.Embed(title=x['submission_name'], color=0xFF5700)
-            embed.set_author(name='BrandoBot#9684', url='https://github.com/mattdood')
-            embed.description = x['body']
-            embed.url = 'https://reddit.com' + x['url']
-            embed.add_field(name='Score', value=x['score'], inline=True)
-            embed.add_field(name='# Comments', value=x['num_comments'], inline=True)
-            embed.add_field(name='Subreddit', value=x['subreddit'], inline=True)
-            embed.add_field(name='Comment ID', value=x['comment_id'], inline=True)
-            embed.add_field(name='OP', value=x['comment_author'], inline=True)
-            embed.set_footer(text=f'Use `!pm_more_comments <comment_id>` to read more!  |  {x["created_at"]}')
+            embed = discord.Embed(title=x["submission_name"], color=0xFF5700)
+            embed.set_author(
+                name="BrandoBot#9684", url="https://github.com/mattdood/brandobot"
+            )
+            embed.description = x["body"]
+            embed.url = "https://reddit.com" + x["url"]
+            embed.add_field(name="Score", value=x["score"], inline=True)
+            embed.add_field(name="# Comments", value=x["num_comments"], inline=True)
+            embed.add_field(name="Subreddit", value=x["subreddit"], inline=True)
+            embed.add_field(name="Comment ID", value=x["comment_id"], inline=True)
+            embed.add_field(name="OP", value=x["comment_author"], inline=True)
+            embed.set_footer(
+                text=f'Use `!pm_more_comments <comment_id>` to read more!  |  {x["created_at"]}'
+            )
             embeds.append(embed)
         return embeds
