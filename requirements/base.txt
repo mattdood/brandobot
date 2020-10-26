@@ -39,3 +39,8 @@ praw==7.1.0
 prawcore==1.5.0
 update-checker==0.18.0
 websocket-client==0.57.0
+
+# Weather
+# -----------------------------------
+pyiqvia
+asyncio

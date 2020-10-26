@@ -3,6 +3,7 @@ from datetime import datetime
 import discord
 import requests
 from discord.ext import commands
+from pyiqvia import Client
 
 import settings
 
@@ -16,7 +17,8 @@ class WeatherCog(commands.Cog):
     The `ctx` argument is treated as `self` for commands and is omitted from documentation.
     """
 
-    api = "&appid={api_key}".format(api_key=settings.OPENWEATHERMAP_API_KEY)
+    api_openweather = "&appid={api_key}".format(api_key=settings.OPENWEATHERMAP_API_KEY)
+    api_ambee = ""
 
     def __init__(self, bot):
         self.bot = bot
@@ -43,7 +45,7 @@ class WeatherCog(commands.Cog):
         forecast = "http://api.openweathermap.org/data/2.5/forecast?q={location}&units=imperial".format(
             location=location
         )
-        forecast += WeatherCog.api
+        forecast += WeatherCog.api_openweather
         api_call = requests.get(forecast)
         weather = WeatherCog._format_forecast_data(api_call.json())
 
@@ -70,11 +72,44 @@ class WeatherCog(commands.Cog):
         forecast = "http://api.openweathermap.org/data/2.5/weather?q={location}&units=imperial".format(
             location=location
         )
-        forecast += WeatherCog.api
+        forecast += WeatherCog.api_openweather
         api_call = requests.get(forecast)
         weather = WeatherCog._format_weather_data(api_call.json())
 
         await ctx.send(embed=weather)
+
+    @commands.command()
+    async def pollen(self, ctx, zip_code: str):
+        """3 day pollen index.
+
+        Pulls a 3 day pollen index with allergen information from `pollen.com`
+        using the `pyiqvia` wrapper.
+
+        Parameters:
+            zip_code (str): Converted to string for convenience with piqvia.
+        Returns:
+            message (class Embed): The pollen index and allergen information
+                                (allergen name, genus, and plant type) for the day.
+        """
+        client = Client(zip_code)
+        data = await client.allergens.current()
+        allergens = WeatherCog._format_pollen_data(data)
+
+        await ctx.send(embed=allergens)
+
+    @staticmethod
+    def _lat_lang(location: str):
+        forecast = "http://api.openweathermap.org/data/2.5/weather?q={location}&units=imperial".format(
+            location=location
+        )
+        forecast += WeatherCog.api_openweather
+        api_call = requests.get(forecast)
+        weather = api_call.json()
+        coords = {
+            "latitude": weather["coord"]["lat"],
+            "longitude": weather["coord"]["lon"],
+        }
+        return coords
 
     @staticmethod
     def _format_forecast_data(data):
@@ -181,5 +216,39 @@ class WeatherCog(commands.Cog):
         embed.add_field(name="Timezone", value=city["timezone"], inline=True)
         embed.set_footer(
             text=f"Use `!pm_more_comments <comment_id>` to read more!  |  {datetime.now()}"
+        )
+        return embed
+
+    @staticmethod
+    def _format_pollen_data(data):
+        info = {
+            "date": datetime.now().strftime("%m-%d-%Y"),
+            "city": data["Location"]["DisplayLocation"],
+        }
+        days = []
+        for x in data["Location"]["periods"]:
+            days.append(x)
+
+        desc = f'**{info["city"]}**\n'.format(info=info)
+
+        embed = discord.Embed(title="Pollen data for: " + info["date"], color=0x9CCC9C)
+        embed.set_author(
+            name="BrandoBot#9684", url="https://github.com/mattdood/brandobot"
+        )
+        embed.description = desc + "Pollen forecast from <https://pollen.com/>."
+        for x in days:
+            embed.add_field(name="Day", value=x["Type"], inline=True)
+            embed.add_field(name="Index", value=x["Index"], inline=True)
+            allergens = []
+            for y in x["Triggers"]:
+                allergen = f"Name: {y['Name']}\n\tGenus: {y['Genus']}\n\tPlant Type: {y['PlantType']}\n\n"
+                allergens.append(allergen)
+            allergens = "```" + "".join(allergens) + "```"
+            embed.add_field(name="Allergens", value=allergens, inline=False)
+            # embed.add_field(name="Name", value=y["Name"])
+            # embed.add_field(name="Genus", value=y["Genus"])
+            # embed.add_field(name="Plant Type", value=y["PlantType"])
+        embed.set_footer(
+            text=f"Use `!help weathercog` to see more!  |  {datetime.now()}"
         )
         return embed
