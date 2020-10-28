@@ -1,6 +1,6 @@
 # Local only, these will not be carried to a production build.
 
--r ./base.txt
+-r ../requirements.txt
 
 # Documentation
 # -----------------------------------

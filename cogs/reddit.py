@@ -51,7 +51,7 @@ class RedditCog(commands.Cog):
         posts = RedditCog._structure_posts(content)
 
         for x in posts:
-            await ctx.send(f"{x}")
+            await ctx.send(embed=x)
 
     @commands.command()
     async def pm_random_sub(self, ctx):
@@ -64,10 +64,10 @@ class RedditCog(commands.Cog):
         """
         random_sub = self.reddit.random_subreddit()
         content = random_sub.hot(limit=5)
-        posts = RedditCog._structure_posts(content)
+        posts = RedditCog._structure_posts(self=self, content=content)
 
         for x in posts:
-            await ctx.author.send(f"{x}")
+            await ctx.author.send(embed=x)
 
     @commands.command()
     async def pm_stream_sub(self, ctx, sub: str, phrase: str = None):
@@ -117,7 +117,7 @@ class RedditCog(commands.Cog):
         posts = RedditCog._structure_posts(content)
 
         for x in posts:
-            await ctx.send(f"{x}")
+            await ctx.send(embed=x)
 
     @commands.command()
     async def pm_hot_posts(self, ctx, sub: str, count: int = 5):
@@ -137,7 +137,7 @@ class RedditCog(commands.Cog):
         posts = RedditCog._structure_posts(content)
 
         for x in posts:
-            await ctx.author.send(f"{x}")
+            await ctx.author.send(embed=x)
 
     @commands.command()
     async def top_posts(self, ctx, sub: str, timeframe: str = "hour"):
@@ -232,8 +232,7 @@ class RedditCog(commands.Cog):
         for x in comments:
             await ctx.author.send(embed=x)
 
-    @staticmethod
-    def _structure_posts(content: list):
+    def _structure_posts(self, content: list):
         """Structure Reddit posts.
 
         Create `Embed` objects as Discord messages for each post.
@@ -267,8 +266,8 @@ class RedditCog(commands.Cog):
         embeds = []
         for x in posts:
             embed = discord.Embed(title=x["title"], color=0xFF5700)
-            embed.set_author(name="BrandoBot#9684", url="https://github.com/mattdood")
-            embed.description = x["self_text"]
+            embed.set_author(name=f"{self.bot.user}", url="https://github.com/mattdood/brandobot")
+            embed.description = x["self_text"][:2048]
             embed.set_image(url=x["thumbnail"])
             embed.url = x["url"]
             embed.add_field(name="Score", value=x["score"], inline=True)
@@ -283,8 +282,7 @@ class RedditCog(commands.Cog):
             embeds.append(embed)
         return embeds
 
-    @staticmethod
-    def _structure_comments(content: list):
+    def _structure_comments(self, content: list):
         """Structure `Submission` comments.
 
         Create `Embed` objects as Discord messages for each post comment.
@@ -317,7 +315,7 @@ class RedditCog(commands.Cog):
         for x in comments:
             embed = discord.Embed(title=x["submission_name"], color=0xFF5700)
             embed.set_author(
-                name="BrandoBot#9684", url="https://github.com/mattdood/brandobot"
+                name=f"{self.bot.user}", url="https://github.com/mattdood/brandobot"
             )
             embed.description = x["body"]
             embed.url = "https://reddit.com" + x["url"]

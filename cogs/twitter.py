@@ -256,7 +256,7 @@ class TwitterCog(commands.Cog):
             count=count,
             include_rts=include_rts,
         )
-        tweets = TwitterCog._format_tweets(timeline)
+        tweets = TwitterCog._format_tweets(self=self, timeline=timeline)
         await ctx.author.send(f"**List of tweets from:** {list_name}\n")
         for x in tweets:
             await ctx.author.send(embed=x)
@@ -285,7 +285,7 @@ class TwitterCog(commands.Cog):
             count=count,
             include_rts=include_rts,
         )
-        tweets = TwitterCog._format_tweets(timeline)
+        tweets = TwitterCog._format_tweets(self=self, timeline=timeline)
         await ctx.send(f"**List of tweets from:** {list_name}\n")
         for x in tweets:
             await ctx.send(embed=x)
@@ -306,7 +306,7 @@ class TwitterCog(commands.Cog):
             message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.user_timeline(screen_name=screen_name, count=count)
-        tweets = TwitterCog._format_tweets(timeline)
+        tweets = TwitterCog._format_tweets(self=self, timeline=timeline)
         await ctx.author.send(f"**List of tweets from:** {screen_name}\n")
         for x in tweets:
             await ctx.author.send(embed=x)
@@ -327,13 +327,12 @@ class TwitterCog(commands.Cog):
             message (class Message): Messages of tweets formatted as a table.
         """
         timeline = self.api.user_timeline(screen_name=screen_name, count=count)
-        tweets = TwitterCog._format_tweets(timeline)
+        tweets = TwitterCog._format_tweets(self=self, timeline=timeline)
         await ctx.send(f"**List of tweets from:** {screen_name}\n")
         for x in tweets:
             await ctx.send(embed=x)
 
-    @staticmethod
-    def _format_tweets(timeline: list):
+    def _format_tweets(self, timeline: list):
         """Formats tweets as a table.
 
         Creates `Embed` objects from Tweepy `Status` objects.
@@ -371,7 +370,7 @@ class TwitterCog(commands.Cog):
         for x in statuses:
             embed = discord.Embed(title=x["user"], color=0x1DA1F2)
             embed.set_author(
-                name="BrandoBot#9684", url="https://github.com/mattdood/brandobot"
+                name=f"{self.bot.user}", url="https://github.com/mattdood/brandobot"
             )
             embed.description = x["text"]
             embed.add_field(name="# RTs", value=x["retweet_count"], inline=True)
