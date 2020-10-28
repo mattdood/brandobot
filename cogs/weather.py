@@ -12,7 +12,7 @@ class WeatherCog(commands.Cog):
     """Return weather information.
 
     This cog is used to provide allergen and general
-    weather information using the OpenWeatherMap and Ambee APIs.
+    weather information using the OpenWeatherMap/Ambee APIs and `pyiquvia`.
 
     The `ctx` argument is treated as `self` for commands and is omitted from documentation.
     """
@@ -47,7 +47,7 @@ class WeatherCog(commands.Cog):
         )
         forecast += WeatherCog.api_openweather
         api_call = requests.get(forecast)
-        weather = WeatherCog._format_forecast_data(api_call.json())
+        weather = WeatherCog._format_forecast_data(self=self, data=api_call.json())
 
         for x in range(days):
             await ctx.send(embed=weather[x])
@@ -74,7 +74,7 @@ class WeatherCog(commands.Cog):
         )
         forecast += WeatherCog.api_openweather
         api_call = requests.get(forecast)
-        weather = WeatherCog._format_weather_data(api_call.json())
+        weather = WeatherCog._format_weather_data(self=self, data=api_call.json())
 
         await ctx.send(embed=weather)
 
@@ -86,16 +86,40 @@ class WeatherCog(commands.Cog):
         using the `pyiqvia` wrapper.
 
         Parameters:
-            zip_code (str): Converted to string for convenience with piqvia.
+            zip_code (str): Converted to string for convenience with pyiqvia.
         Returns:
             message (class Embed): The pollen index and allergen information
                                 (allergen name, genus, and plant type) for the day.
         """
         client = Client(zip_code)
         data = await client.allergens.current()
-        allergens = WeatherCog._format_pollen_data(data)
+        allergens = WeatherCog._format_pollen_data(self=self, data=data)
 
         await ctx.send(embed=allergens)
+
+    @commands.command()
+    async def pollen_trend(self, ctx, zip_code: str):
+        """Extended pollen forecast.
+
+        A trend description for pollen forecasts. 
+
+        Parameters:
+            zip_code (str): US zip code to look up.
+        Returns:
+            message (class Embed): A short, extended pollen forecast.
+        """
+        client = Client(zip_code)
+        data = await client.allergens.outlook()
+
+        embed = discord.Embed(title="Pollen trend data for: " + data["Market"].capitalize(), color=0x9CCC9C)
+        embed.set_author(
+            name=f"{self.bot.user}", url="https://github.com/mattdood/brandobot"
+        )
+        embed.description = data["Outlook"] + "Pollen forecast from <https://pollen.com/>."
+        embed.add_field(name="Trend", value=data["Trend"], inline=True)
+        embed.add_field(name="Season", value=data["Season"], inline=True)
+
+        await ctx.send(embed=embed)
 
     @staticmethod
     def _lat_lang(location: str):
@@ -111,8 +135,7 @@ class WeatherCog(commands.Cog):
         }
         return coords
 
-    @staticmethod
-    def _format_forecast_data(data):
+    def _format_forecast_data(self, data):
         weather = []
         for x in data["list"]:
             weather.append(
@@ -150,7 +173,7 @@ class WeatherCog(commands.Cog):
                 title="Weather data for: " + x["date"], color=0x27E1DC
             )
             embed.set_author(
-                name="BrandoBot#9684", url="https://github.com/mattdood/brandobot"
+                name=f"{self.bot.user}", url="https://github.com/mattdood/brandobot"
             )
             embed.description = desc + x["weather"] + " with " + x["weather_desc"]
             embed.add_field(name="Current Temp", value=x["current_temp"], inline=True)
@@ -163,13 +186,12 @@ class WeatherCog(commands.Cog):
             embed.add_field(name="Sunset", value=city["sunset"], inline=True)
             embed.add_field(name="Timezone", value=city["timezone"], inline=True)
             embed.set_footer(
-                text=f"Use `!pm_more_comments <comment_id>` to read more!  |  {datetime.now()}"
+                text=f"Use `!help weathercog` for more commands!  |  {datetime.now()}"
             )
             embeds.append(embed)
         return embeds
 
-    @staticmethod
-    def _format_weather_data(data):
+    def _format_weather_data(self, data):
         weather = {
             "date": datetime.utcfromtimestamp(data["dt"]).strftime("%m-%d-%Y %I:%M %p"),
             "current_temp": data["main"]["temp"],
@@ -200,7 +222,7 @@ class WeatherCog(commands.Cog):
             title="Weather data for: " + weather["date"], color=0x27E1DC
         )
         embed.set_author(
-            name="BrandoBot#9684", url="https://github.com/mattdood/brandobot"
+            name=f"{self.bot.user}", url="https://github.com/mattdood/brandobot"
         )
         embed.description = (
             desc + weather["weather"] + " with " + weather["weather_desc"]
@@ -219,8 +241,7 @@ class WeatherCog(commands.Cog):
         )
         return embed
 
-    @staticmethod
-    def _format_pollen_data(data):
+    def _format_pollen_data(cls, data):
         info = {
             "date": datetime.now().strftime("%m-%d-%Y"),
             "city": data["Location"]["DisplayLocation"],
@@ -233,7 +254,7 @@ class WeatherCog(commands.Cog):
 
         embed = discord.Embed(title="Pollen data for: " + info["date"], color=0x9CCC9C)
         embed.set_author(
-            name="BrandoBot#9684", url="https://github.com/mattdood/brandobot"
+            name=f"{self.bot.user}", url="https://github.com/mattdood/brandobot"
         )
         embed.description = desc + "Pollen forecast from <https://pollen.com/>."
         for x in days:
